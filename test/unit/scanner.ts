@@ -230,15 +230,15 @@ describe('unit/scanner', () => {
 
   describe('error handling', () => {
     it('should dump the line with unexpected character', () => {
-      expect(function () {
-        scanner('*-\n*-*-*-*-*-$')
-      }).to.throw('Unexpected character $ at line 2:\n\n   *-*-*-*-*-$')
+      const error = scanner('*-\n*-*-*-*-*-$')
+      expect(error instanceof Error).to.be.true
+      expect((error as Error).message).to.equal('Unexpected character $ at line 2:\n\n   *-*-*-*-*-$')
     })
 
     it('should dump if first character is unexpected', () => {
-      expect(function () {
-        scanner('$')
-      }).to.throw('Unexpected character $ at line 1:\n\n   $')
+      const error = scanner('$')
+      expect(error instanceof Error).to.be.true
+      expect((error as Error).message).to.equal('Unexpected character $ at line 1:\n\n   $')
     })
   })
 
@@ -305,9 +305,8 @@ describe('unit/scanner', () => {
     it('should support multi line strings')
 
     it('should error if unterminated string', () => {
-      expect(function () {
-        scanner('"')
-      }).to.throw('Unterminated string')
+      const result = scanner('"')
+      expect((result as Error).message).to.equal('Unterminated string starting at line 1:\n\n   "')
     })
 
     it('should consume number literal', () => {
@@ -487,7 +486,7 @@ describe('unit/scanner', () => {
 
     it('should recognise multiple identifiers seperated by other tokens', () => {
       const result = scanner('fun hello(world)')
-      expect(getTypes(result)).to.deep.equal([
+      expect(getTypes(result as readonly Token[])).to.deep.equal([
         TokenType.FUN,
         TokenType.IDENTIFIER,
         TokenType.LEFT_PAREN,

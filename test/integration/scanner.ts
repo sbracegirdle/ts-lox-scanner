@@ -135,9 +135,9 @@ fun identity(a) {
 
 print identity(addPair)(1, 2); // Prints "3".
 `)
-    expect(getIdentifiers(result)).to.deep.equal(['addPair', 'a', 'b', 'identity'])
+    expect(getIdentifiers(result as readonly Token[])).to.deep.equal(['addPair', 'a', 'b', 'identity'])
 
-    expect(getTypes(result)).to.deep.equal([
+    expect(getTypes(result as readonly Token[])).to.deep.equal([
       // First function
       TokenType.FUN,
       TokenType.IDENTIFIER,
