@@ -8,6 +8,6 @@
   ],
   "slow": 75,
   "timeout": 2000,
-  "spec": "test/unit",
+  "spec": "test",
   "file": "./test/index.ts"
 }
