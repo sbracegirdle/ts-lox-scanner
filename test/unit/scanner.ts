@@ -274,4 +274,231 @@ describe('unit/scanner', () => {
       expect(scanner('\n\n/\n')).to.deep.equal(expected)
     })
   })
+
+  describe('literals', () => {
+    it('should consume string literal', () => {
+      const expected: Token[] = [
+        {
+          type: TokenType.STRING,
+          text: 'hello',
+          start: 0,
+          length: 7,
+        },
+      ]
+      expect(scanner('"hello"')).to.deep.equal(expected)
+    })
+
+    it('should consume empty string literal', () => {
+      const expected: Token[] = [
+        {
+          type: TokenType.STRING,
+          text: '',
+          start: 0,
+          length: 2,
+        },
+      ]
+      expect(scanner('""')).to.deep.equal(expected)
+    })
+
+    it('should support multi line strings')
+
+    it('should error if unterminated string', () => {
+      expect(function () {
+        scanner('"')
+      }).to.throw('Unterminated string')
+    })
+
+    it('should consume number literal', () => {
+      const expected: Token[] = [
+        {
+          type: TokenType.NUMBER,
+          text: '0',
+          start: 0,
+          length: 1,
+        },
+      ]
+      expect(scanner('0')).to.deep.equal(expected)
+    })
+
+    it('should consume longer number literal', () => {
+      const expected: Token[] = [
+        {
+          type: TokenType.NUMBER,
+          text: '1234567',
+          start: 0,
+          length: 7,
+        },
+      ]
+      expect(scanner('1234567')).to.deep.equal(expected)
+    })
+
+    it('should consume number with decimal', () => {
+      const expected: Token[] = [
+        {
+          type: TokenType.NUMBER,
+          text: '1234.567',
+          start: 0,
+          length: 8,
+        },
+      ]
+      expect(scanner('1234.567')).to.deep.equal(expected)
+    })
+
+    it('should treat hanging trailing decimal as dot', () => {
+      const expected: Token[] = [
+        {
+          type: TokenType.NUMBER,
+          text: '1234',
+          start: 0,
+          length: 4,
+        },
+        {
+          type: TokenType.DOT,
+          start: 4,
+          length: 1,
+        },
+      ]
+      expect(scanner('1234.')).to.deep.equal(expected)
+    })
+
+    it('should treat hanging leading decimal as dot', () => {
+      const expected: Token[] = [
+        {
+          type: TokenType.DOT,
+          start: 0,
+          length: 1,
+        },
+        {
+          type: TokenType.NUMBER,
+          text: '1234',
+          start: 1,
+          length: 4,
+        },
+      ]
+      expect(scanner('.1234')).to.deep.equal(expected)
+    })
+
+    it('should treat two dots as multiple literals', () => {
+      const expected: Token[] = [
+        {
+          type: TokenType.NUMBER,
+          text: '1.1',
+          start: 0,
+          length: 3,
+        },
+        {
+          type: TokenType.DOT,
+          start: 3,
+          length: 1,
+        },
+        {
+          type: TokenType.NUMBER,
+          text: '1',
+          start: 4,
+          length: 1,
+        },
+      ]
+      expect(scanner('1.1.1')).to.deep.equal(expected)
+    })
+  })
+
+  describe('keywords', () => {
+    it('should recognise and', () => {
+      const expected: Token[] = [
+        {
+          type: TokenType.AND,
+          start: 0,
+          length: 3,
+        },
+      ]
+      expect(scanner('and')).to.deep.equal(expected)
+    })
+
+    it('should recognise or', () => {
+      const expected: Token[] = [
+        {
+          type: TokenType.OR,
+          start: 0,
+          length: 2,
+        },
+      ]
+      expect(scanner('or')).to.deep.equal(expected)
+    })
+
+    it('should recognise and and or', () => {
+      const expected: Token[] = [
+        {
+          type: TokenType.AND,
+          start: 0,
+          length: 3,
+        },
+        {
+          type: TokenType.OR,
+          start: 3,
+          length: 2,
+        },
+      ]
+      expect(scanner('andor')).to.deep.equal(expected)
+    })
+
+    it('should recognise this', () => {
+      const expected: Token[] = [
+        {
+          type: TokenType.THIS,
+          start: 0,
+          length: 4,
+        },
+      ]
+      expect(scanner('this')).to.deep.equal(expected)
+    })
+
+    it('should recognise fun', () => {
+      const expected: Token[] = [
+        {
+          type: TokenType.FUN,
+          start: 0,
+          length: 3,
+        },
+      ]
+      expect(scanner('fun')).to.deep.equal(expected)
+    })
+  })
+
+  describe('identifiers', () => {
+    it('should recognise my camelCase identifier', () => {
+      const expected: Token[] = [
+        {
+          type: TokenType.IDENTIFIER,
+          text: 'myVariable',
+          start: 0,
+          length: 10,
+        },
+      ]
+      expect(scanner('myVariable')).to.deep.equal(expected)
+    })
+
+    it('should recognise my snake_case identifier', () => {
+      const expected: Token[] = [
+        {
+          type: TokenType.IDENTIFIER,
+          text: 'my_var',
+          start: 0,
+          length: 6,
+        },
+      ]
+      expect(scanner('my_var')).to.deep.equal(expected)
+    })
+
+    it('should recognise my alphanumeric identifier', () => {
+      const expected: Token[] = [
+        {
+          type: TokenType.IDENTIFIER,
+          text: 'a1234',
+          start: 0,
+          length: 5,
+        },
+      ]
+      expect(scanner('a1234')).to.deep.equal(expected)
+    })
+  })
 })

@@ -86,6 +86,55 @@ const isWhitespace = (chr: string) =>
     .on(isChar(' '), isTrue)
     .otherwise(isFalse)
 
+const isDigit = (chr: string) => chr >= '0' && chr <= '9'
+const isAlpha = (c: string) => (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_'
+const isAlphaNumeric = (c: string) => isAlpha(c) || isDigit(c)
+
+const stringTokenOf = (source: string, c: Context, start: number) => (): Token => {
+  const stringEnd = source.substring(start + 1).indexOf('"')
+  console.log(stringEnd)
+
+  if (stringEnd >= 0) {
+    const text = source.substring(start + 1, start + 1 + stringEnd)
+    return {
+      type: TokenType.STRING,
+      text,
+      start,
+      length: text.length + 2,
+    }
+  } else {
+    throw Error(`Unterminated string starting at line ${c.line}:\n\n   ${source.substring(c.lineStart, start + 1)}`)
+  }
+}
+
+const numberTokenOf = (source: string, chars: string[], start: number) => (): Token => {
+  let numberEnd = start
+  while (isDigit(chars[numberEnd])) numberEnd++
+  if (chars[numberEnd] === '.' && isDigit(chars[numberEnd + 1])) numberEnd++
+  while (isDigit(chars[numberEnd])) numberEnd++
+
+  const text = source.substring(start, start + numberEnd)
+  return {
+    type: TokenType.NUMBER,
+    text,
+    start,
+    length: text.length,
+  }
+}
+
+const identifierTokenOf = (source: string, chars: string[], start: number) => (): Token => {
+  let idEnd = start
+  while (isAlphaNumeric(chars[idEnd])) idEnd++
+
+  const text = source.substring(start, start + idEnd)
+  return {
+    type: TokenType.IDENTIFIER,
+    text,
+    start,
+    length: text.length,
+  }
+}
+
 export const scanner = (source: string): Token[] => {
   const chars = [...source]
   const context: Context = chars.reduce(
@@ -131,6 +180,25 @@ export const scanner = (source: string): Token[] => {
           .on(isChars('>=')(chars, idx), tokenOf(TokenType.GREATER_EQUAL, idx, 2))
           .on(isChar('>'), tokenOf(TokenType.GREATER, idx))
           .on(isChar('/'), tokenOf(TokenType.SLASH, idx))
+          .on(isChar('"'), stringTokenOf(source, c, idx))
+          .on(isDigit, numberTokenOf(source, chars, idx))
+          .on(isChars('and')(chars, idx), tokenOf(TokenType.AND, idx, 3))
+          .on(isChars('class')(chars, idx), tokenOf(TokenType.CLASS, idx, 5))
+          .on(isChars('else')(chars, idx), tokenOf(TokenType.ELSE, idx, 4))
+          .on(isChars('false')(chars, idx), tokenOf(TokenType.FALSE, idx, 5))
+          .on(isChars('for')(chars, idx), tokenOf(TokenType.FOR, idx, 3))
+          .on(isChars('fun')(chars, idx), tokenOf(TokenType.FUN, idx, 3))
+          .on(isChars('if')(chars, idx), tokenOf(TokenType.IF, idx, 2))
+          .on(isChars('nil')(chars, idx), tokenOf(TokenType.NIL, idx, 3))
+          .on(isChars('or')(chars, idx), tokenOf(TokenType.OR, idx, 2))
+          .on(isChars('print')(chars, idx), tokenOf(TokenType.PRINT, idx, 5))
+          .on(isChars('return')(chars, idx), tokenOf(TokenType.RETURN, idx, 6))
+          .on(isChars('super')(chars, idx), tokenOf(TokenType.SUPER, idx, 5))
+          .on(isChars('this')(chars, idx), tokenOf(TokenType.THIS, idx, 4))
+          .on(isChars('true')(chars, idx), tokenOf(TokenType.TRUE, idx, 4))
+          .on(isChars('var')(chars, idx), tokenOf(TokenType.VAR, idx, 3))
+          .on(isChars('while')(chars, idx), tokenOf(TokenType.WHILE, idx, 5))
+          .on(isAlphaNumeric, identifierTokenOf(source, chars, idx))
           .otherwise(chr => {
             throw Error(
               `Unexpected character ${chr} at line ${c.line}:\n\n   ${source.substring(c.lineStart, idx + 1)}`,
