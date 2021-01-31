@@ -302,7 +302,17 @@ describe('unit/scanner', () => {
       expect(scanner('""')).to.deep.equal(expected)
     })
 
-    it('should support multi line strings')
+    it('should consume multi line strings', () => {
+      const expected: readonly Token[] = [
+        {
+          type: TokenType.STRING,
+          text: 'he\nllo',
+          start: 0,
+          length: 8,
+        },
+      ]
+      expect(scanner('"he\nllo"')).to.deep.equal(expected)
+    })
 
     it('should error if unterminated string', () => {
       const result = scanner('"')
