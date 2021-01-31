@@ -87,8 +87,31 @@ const isWhitespace = (chr: string): boolean =>
     .otherwise(isFalse)
 
 const isDigit = (chr: string): boolean => chr >= '0' && chr <= '9'
+const isDigitOrDot = (chr: string): boolean => isDigit(chr) || chr === '.'
 const isAlpha = (c: string): boolean => (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_'
 const isAlphaNumeric = (c: string): boolean => isAlpha(c) || isDigit(c)
+type genericFunction<I, O> = (i: I) => O
+const not = <I extends unknown>(f: genericFunction<I, boolean>): genericFunction<I, boolean> => (i: I): boolean => !f(i)
+
+const getNextMatching = (chars: readonly string[], start: number, fn: (s: string) => boolean): number =>
+  chars.slice(start).reduce((end, current, idx) => (end >= 0 ? end : fn(current) ? idx : -1), -1)
+
+const getTextMatching = (
+  source: string,
+  chars: readonly string[],
+  start: number,
+  fn: (s: string) => boolean,
+): string => {
+  const end = getNextMatching(chars, start, not(fn))
+  return source.substring(start, end >= 0 ? start + end : start + source.length)
+}
+
+const sanitiseNumber = (number: string): string =>
+  number
+    .split('.')
+    .map((part, idx) => (idx < 2 ? part : null))
+    .filter(a => !!a)
+    .join('.')
 
 const stringTokenOf = (source: string, c: Context, start: number) => (): Token => {
   const stringEnd = source.substring(start + 1).indexOf('"')
@@ -107,12 +130,8 @@ const stringTokenOf = (source: string, c: Context, start: number) => (): Token =
 }
 
 const numberTokenOf = (source: string, chars: readonly string[], start: number) => (): Token => {
-  let numberEnd = start
-  while (isDigit(chars[numberEnd])) numberEnd++
-  if (chars[numberEnd] === '.' && isDigit(chars[numberEnd + 1])) numberEnd++
-  while (isDigit(chars[numberEnd])) numberEnd++
+  const text = sanitiseNumber(getTextMatching(source, chars, start, isDigitOrDot))
 
-  const text = source.substring(start, numberEnd)
   return {
     type: TokenType.NUMBER,
     text,
@@ -121,12 +140,8 @@ const numberTokenOf = (source: string, chars: readonly string[], start: number) 
   }
 }
 
-const getNextNotMatching = (chars: readonly string[], start: number, fn: (s: string) => boolean): number =>
-  chars.slice(start).reduce((end, current, idx) => (end >= 0 ? end : fn(current) ? -1 : idx), -1)
-
 const identifierTokenOf = (source: string, chars: readonly string[], start: number) => (): Token => {
-  const end = getNextNotMatching(chars, start, isAlphaNumeric)
-  const text = source.substring(start, end >= 0 ? start + end : start + source.length)
+  const text = getTextMatching(source, chars, start, isAlphaNumeric)
   return {
     type: TokenType.IDENTIFIER,
     text,
