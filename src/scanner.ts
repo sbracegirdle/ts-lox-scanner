@@ -50,16 +50,16 @@ export enum TokenType {
   EOF,
 }
 
-export interface Token {
-  type: TokenType
-  text?: string | undefined
-  start: number
-  length: number
+export type Token = {
+  readonly type: TokenType
+  readonly text?: string | undefined
+  readonly start: number
+  readonly length: number
   // line: number
 }
 
 const isChar = (expected: string) => (chr: string): boolean => chr === expected
-const isChars = (expected: string) => (chars: string[], idx: number) => (): boolean =>
+const isChars = (expected: string) => (chars: readonly string[], idx: number) => (): boolean =>
   chars.slice(idx, idx + expected.length).join('') === expected
 
 const tokenOf = (type: TokenType, start: number, length = 1) => (): Token => ({
@@ -68,17 +68,17 @@ const tokenOf = (type: TokenType, start: number, length = 1) => (): Token => ({
   length,
 })
 
-interface Context {
-  tokens: Token[]
-  comment: boolean
-  line: number
-  lineStart: number
+type Context = {
+  readonly tokens: readonly Token[]
+  readonly comment: boolean
+  readonly line: number
+  readonly lineStart: number
 }
 
-const isTrue = () => true
-const isFalse = () => false
+const isTrue = (): boolean => true
+const isFalse = (): boolean => false
 
-const isWhitespace = (chr: string) =>
+const isWhitespace = (chr: string): boolean =>
   match<string, boolean>(chr)
     .on(isChar('\n'), isTrue)
     .on(isChar('\r'), isTrue)
@@ -86,13 +86,12 @@ const isWhitespace = (chr: string) =>
     .on(isChar(' '), isTrue)
     .otherwise(isFalse)
 
-const isDigit = (chr: string) => chr >= '0' && chr <= '9'
-const isAlpha = (c: string) => (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_'
-const isAlphaNumeric = (c: string) => isAlpha(c) || isDigit(c)
+const isDigit = (chr: string): boolean => chr >= '0' && chr <= '9'
+const isAlpha = (c: string): boolean => (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_'
+const isAlphaNumeric = (c: string): boolean => isAlpha(c) || isDigit(c)
 
 const stringTokenOf = (source: string, c: Context, start: number) => (): Token => {
   const stringEnd = source.substring(start + 1).indexOf('"')
-  console.log(stringEnd)
 
   if (stringEnd >= 0) {
     const text = source.substring(start + 1, start + 1 + stringEnd)
@@ -107,13 +106,13 @@ const stringTokenOf = (source: string, c: Context, start: number) => (): Token =
   }
 }
 
-const numberTokenOf = (source: string, chars: string[], start: number) => (): Token => {
+const numberTokenOf = (source: string, chars: readonly string[], start: number) => (): Token => {
   let numberEnd = start
   while (isDigit(chars[numberEnd])) numberEnd++
   if (chars[numberEnd] === '.' && isDigit(chars[numberEnd + 1])) numberEnd++
   while (isDigit(chars[numberEnd])) numberEnd++
 
-  const text = source.substring(start, start + numberEnd)
+  const text = source.substring(start, numberEnd)
   return {
     type: TokenType.NUMBER,
     text,
@@ -122,11 +121,12 @@ const numberTokenOf = (source: string, chars: string[], start: number) => (): To
   }
 }
 
-const identifierTokenOf = (source: string, chars: string[], start: number) => (): Token => {
-  let idEnd = start
-  while (isAlphaNumeric(chars[idEnd])) idEnd++
+const getNextNotMatching = (chars: readonly string[], start: number, fn: (s: string) => boolean): number =>
+  chars.slice(start).reduce((end, current, idx) => (end >= 0 ? end : fn(current) ? -1 : idx), -1)
 
-  const text = source.substring(start, start + idEnd)
+const identifierTokenOf = (source: string, chars: readonly string[], start: number) => (): Token => {
+  const end = getNextNotMatching(chars, start, isAlphaNumeric)
+  const text = source.substring(start, end >= 0 ? start + end : start + source.length)
   return {
     type: TokenType.IDENTIFIER,
     text,
@@ -135,7 +135,7 @@ const identifierTokenOf = (source: string, chars: string[], start: number) => ()
   }
 }
 
-export const scanner = (source: string): Token[] => {
+export const scanner = (source: string): readonly Token[] => {
   const chars = [...source]
   const context: Context = chars.reduce(
     (c: Context, chr, idx) => {

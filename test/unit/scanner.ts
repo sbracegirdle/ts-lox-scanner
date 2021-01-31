@@ -1,6 +1,8 @@
+/* eslint-disable functional/no-expression-statement */
 import {expect} from 'chai'
 
 import {scanner, Token, TokenType} from '../../src/scanner'
+import {getTypes} from '../getTypes'
 
 describe('unit/scanner', () => {
   describe('single char tokens', () => {
@@ -23,7 +25,7 @@ describe('unit/scanner', () => {
     })
 
     it('should recognise left and right paren', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.LEFT_PAREN,
           start: 0,
@@ -39,7 +41,7 @@ describe('unit/scanner', () => {
     })
 
     it('should recognise semi colon', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.SEMICOLON,
           start: 0,
@@ -50,7 +52,7 @@ describe('unit/scanner', () => {
     })
 
     it('should recognise star', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.STAR,
           start: 0,
@@ -63,7 +65,7 @@ describe('unit/scanner', () => {
 
   describe('one or two character tokens', () => {
     it('should recognise not equal', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.BANG_EQUAL,
           start: 0,
@@ -74,7 +76,7 @@ describe('unit/scanner', () => {
     })
 
     it('should recognise equal', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.EQUAL_EQUAL,
           start: 0,
@@ -85,7 +87,7 @@ describe('unit/scanner', () => {
     })
 
     it('should recognise less equal', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.LESS_EQUAL,
           start: 0,
@@ -96,7 +98,7 @@ describe('unit/scanner', () => {
     })
 
     it('should recognise greater equal', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.GREATER_EQUAL,
           start: 0,
@@ -107,7 +109,7 @@ describe('unit/scanner', () => {
     })
 
     it('should recognise assignment', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.EQUAL,
           start: 0,
@@ -118,7 +120,7 @@ describe('unit/scanner', () => {
     })
 
     it('should recognise not equal between other tokens', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.PLUS,
           start: 0,
@@ -139,7 +141,7 @@ describe('unit/scanner', () => {
     })
 
     it('should recognise equal between other tokens', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.PLUS,
           start: 0,
@@ -160,7 +162,7 @@ describe('unit/scanner', () => {
     })
 
     it('should recognise bang', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.BANG,
           start: 0,
@@ -173,12 +175,12 @@ describe('unit/scanner', () => {
 
   describe('comments', () => {
     it('should ignore whole line of comments', () => {
-      const expected: Token[] = []
+      const expected: readonly Token[] = []
       expect(scanner('//hello this is a comment')).to.deep.equal(expected)
     })
 
     it('should ignore remainder of line of comments', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.STAR,
           start: 0,
@@ -199,7 +201,7 @@ describe('unit/scanner', () => {
     })
 
     it('should handle single slash', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.SLASH,
           start: 0,
@@ -210,7 +212,7 @@ describe('unit/scanner', () => {
     })
 
     it('should not ignore next line', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.STAR,
           start: 26,
@@ -242,7 +244,7 @@ describe('unit/scanner', () => {
 
   describe('whitespace', () => {
     it('should ignore spaces', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.SLASH,
           start: 2,
@@ -253,7 +255,7 @@ describe('unit/scanner', () => {
     })
 
     it('should ignore tabs', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.SLASH,
           start: 1,
@@ -264,7 +266,7 @@ describe('unit/scanner', () => {
     })
 
     it('should ignore new lines', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.SLASH,
           start: 2,
@@ -277,7 +279,7 @@ describe('unit/scanner', () => {
 
   describe('literals', () => {
     it('should consume string literal', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.STRING,
           text: 'hello',
@@ -289,7 +291,7 @@ describe('unit/scanner', () => {
     })
 
     it('should consume empty string literal', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.STRING,
           text: '',
@@ -309,7 +311,7 @@ describe('unit/scanner', () => {
     })
 
     it('should consume number literal', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.NUMBER,
           text: '0',
@@ -321,7 +323,7 @@ describe('unit/scanner', () => {
     })
 
     it('should consume longer number literal', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.NUMBER,
           text: '1234567',
@@ -333,7 +335,7 @@ describe('unit/scanner', () => {
     })
 
     it('should consume number with decimal', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.NUMBER,
           text: '1234.567',
@@ -345,7 +347,7 @@ describe('unit/scanner', () => {
     })
 
     it('should treat hanging trailing decimal as dot', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.NUMBER,
           text: '1234',
@@ -362,7 +364,7 @@ describe('unit/scanner', () => {
     })
 
     it('should treat hanging leading decimal as dot', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.DOT,
           start: 0,
@@ -379,7 +381,7 @@ describe('unit/scanner', () => {
     })
 
     it('should treat two dots as multiple literals', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.NUMBER,
           text: '1.1',
@@ -404,7 +406,7 @@ describe('unit/scanner', () => {
 
   describe('keywords', () => {
     it('should recognise and', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.AND,
           start: 0,
@@ -415,7 +417,7 @@ describe('unit/scanner', () => {
     })
 
     it('should recognise or', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.OR,
           start: 0,
@@ -426,7 +428,7 @@ describe('unit/scanner', () => {
     })
 
     it('should recognise and and or', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.AND,
           start: 0,
@@ -442,7 +444,7 @@ describe('unit/scanner', () => {
     })
 
     it('should recognise this', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.THIS,
           start: 0,
@@ -453,7 +455,7 @@ describe('unit/scanner', () => {
     })
 
     it('should recognise fun', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.FUN,
           start: 0,
@@ -465,8 +467,37 @@ describe('unit/scanner', () => {
   })
 
   describe('identifiers', () => {
+    it('should recognise multiple identifiers', () => {
+      const expected: readonly Token[] = [
+        {
+          type: TokenType.IDENTIFIER,
+          text: 'hello',
+          start: 0,
+          length: 5,
+        },
+        {
+          type: TokenType.IDENTIFIER,
+          text: 'world',
+          start: 6,
+          length: 5,
+        },
+      ]
+      expect(scanner('hello world')).to.deep.equal(expected)
+    })
+
+    it('should recognise multiple identifiers seperated by other tokens', () => {
+      const result = scanner('fun hello(world)')
+      expect(getTypes(result)).to.deep.equal([
+        TokenType.FUN,
+        TokenType.IDENTIFIER,
+        TokenType.LEFT_PAREN,
+        TokenType.IDENTIFIER,
+        TokenType.RIGHT_PAREN,
+      ])
+    })
+
     it('should recognise my camelCase identifier', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.IDENTIFIER,
           text: 'myVariable',
@@ -478,7 +509,7 @@ describe('unit/scanner', () => {
     })
 
     it('should recognise my snake_case identifier', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.IDENTIFIER,
           text: 'my_var',
@@ -490,7 +521,7 @@ describe('unit/scanner', () => {
     })
 
     it('should recognise my alphanumeric identifier', () => {
-      const expected: Token[] = [
+      const expected: readonly Token[] = [
         {
           type: TokenType.IDENTIFIER,
           text: 'a1234',

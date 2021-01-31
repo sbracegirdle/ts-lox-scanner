@@ -4,13 +4,16 @@
   "parserOptions": {
     "project": "./tsconfig.json"
   },
-  "plugins": ["@typescript-eslint", "import"],
+  "plugins": ["@typescript-eslint", "import", "functional"],
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:@typescript-eslint/recommended-requiring-type-checking",
     "plugin:import/warnings",
-    "plugin:import/typescript"
+    "plugin:import/typescript",
+    "plugin:functional/external-recommended",
+    "plugin:functional/recommended",
+    "plugin:functional/stylitic"
   ],
   "rules": {
     "@typescript-eslint/member-delimiter-style": "off",
@@ -18,6 +21,7 @@
     "@typescript-eslint/no-empty-interface": "off",
     "@typescript-eslint/no-unused-vars": "off",
     "@typescript-eslint/unbound-method": "off",
+    "functional/functional-parameters": "off",
     "import/order": [
       1,
       {

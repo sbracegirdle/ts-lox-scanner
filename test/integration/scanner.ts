@@ -1,10 +1,13 @@
+/* eslint-disable functional/no-expression-statement */
 import {expect} from 'chai'
 
 import {scanner, Token, TokenType} from '../../src/scanner'
+import {getIdentifiers} from '../getIdentifiers'
+import {getTypes} from '../getTypes'
 
 describe('integration/scanner', () => {
   it('should handle grouping and operators', () => {
-    const expected: Token[] = [
+    const expected: readonly Token[] = [
       {
         type: TokenType.LEFT_PAREN,
         start: 22,
@@ -92,5 +95,87 @@ describe('integration/scanner', () => {
 !*+-/=<> <= == // operators
 `)
     expect(result).to.deep.equal(expected)
+  })
+
+  it('should handle hello world program', () => {
+    const expected: readonly Token[] = [
+      {
+        type: TokenType.PRINT,
+        start: 28,
+        length: 5,
+      },
+      {
+        type: TokenType.STRING,
+        text: 'Hello, world!',
+        start: 34,
+        length: 15,
+      },
+      {
+        type: TokenType.SEMICOLON,
+        start: 49,
+        length: 1,
+      },
+    ]
+    const result = scanner(`
+// Your first Lox program!
+print "Hello, world!";
+`)
+    expect(result).to.deep.equal(expected)
+  })
+
+  it('should handle closure', () => {
+    const result = scanner(`
+fun addPair(a, b) {
+  return a + b;
+}
+
+fun identity(a) {
+  return a;
+}
+
+print identity(addPair)(1, 2); // Prints "3".
+`)
+    expect(getIdentifiers(result)).to.deep.equal(['addPair', 'a', 'b', 'identity'])
+
+    expect(getTypes(result)).to.deep.equal([
+      // First function
+      TokenType.FUN,
+      TokenType.IDENTIFIER,
+      TokenType.LEFT_PAREN,
+      TokenType.IDENTIFIER,
+      TokenType.COMMA,
+      TokenType.IDENTIFIER,
+      TokenType.RIGHT_PAREN,
+      TokenType.LEFT_BRACE,
+      TokenType.RETURN,
+      TokenType.IDENTIFIER,
+      TokenType.PLUS,
+      TokenType.IDENTIFIER,
+      TokenType.SEMICOLON,
+      TokenType.RIGHT_BRACE,
+      // Second function
+      TokenType.FUN,
+      TokenType.IDENTIFIER,
+      TokenType.LEFT_PAREN,
+      TokenType.IDENTIFIER,
+      TokenType.RIGHT_PAREN,
+      TokenType.LEFT_BRACE,
+      TokenType.RETURN,
+      TokenType.IDENTIFIER,
+      TokenType.SEMICOLON,
+      TokenType.RIGHT_BRACE,
+      // Print call
+      TokenType.PRINT,
+      TokenType.IDENTIFIER,
+      TokenType.LEFT_PAREN,
+      TokenType.IDENTIFIER,
+      TokenType.RIGHT_PAREN,
+      TokenType.LEFT_PAREN,
+      TokenType.NUMBER,
+      TokenType.COMMA,
+      TokenType.NUMBER,
+      TokenType.RIGHT_PAREN,
+      TokenType.SEMICOLON,
+    ])
   })
 })
